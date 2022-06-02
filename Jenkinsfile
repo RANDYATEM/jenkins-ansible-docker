@@ -8,7 +8,7 @@ pipeline{
     stage('GitClone'){
       steps{
         echo "cloning the lastest applications version"
-        git "https://github.com/LandmakTechnology/maven-web-application"
+        git "https://github.com/RANDYATEM/jenkins-ansible-docker.git"
       }
     }
       stage('Test+Build'){
@@ -35,8 +35,8 @@ pipeline{
       stage('predeployment'){
       steps{
         sh "echo creating docker image"
-        sh "docker build -t mylandmarktech/maven-web-app . "
-        sh "docker push mylandmarktech/maven-web-app"
+        sh "docker build -t RANDYATEM/jenkins-ansible-docker.git"
+        sh "docker push RANDYATEM/jenkins-ansible-docker.git"
       }
     }
     stage('UnDeploy'){
@@ -45,7 +45,7 @@ pipeline{
         sh "docker rm -f webapp"
       }
     stage('Deploy - Clone') {
-          git 'https://github.com/priximmo/jenkins-ansible-docker.git'
+          git 'https://github.com/RANDYATEM/jenkins-ansible-docker.git'
     }
     stage('Deploy - End') {
       ansiblePlaybook (
