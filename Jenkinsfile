@@ -1,30 +1,49 @@
-node {
-   def registryProjet='registry.gitlab.com/xavki/presentations-jenkins/wartest'
-   def IMAGE="${registryProjet}:version-${env.BUILD_ID}"
-    stage('Build - Clone') {
-          git 'https://github.com/priximmo/war-build-docker.git'
+pipeline{
+  agent any 
+  tools{
+    maven "maven3.8.4"  
     }
-    stage('Build - Maven package'){
-            sh 'mvn package'
+  }
+  stages{
+    stage('GitClone'){
+      steps{
+        echo "cloning the lastest applications version"
+        git "https://github.com/LandmakTechnology/maven-web-application"
+      }
     }
-    def img = stage('Build') {
-          docker.build("$IMAGE",  '.')
+      stage('Test+Build'){
+      steps{
+        sh "echo Running unitTesting"
+        sh "mvn clean package"
+        echo "echo test successful and backupArtifacts created"
+      }
     }
-    stage('Build - Test') {
-            img.withRun("--name run-$BUILD_ID -p 8081:8080") { c ->
-            sh 'docker ps'
-            sh 'netstat -ntaup'
-            sh 'sleep 30s'
-            sh 'curl 127.0.0.1:8081'
-            sh 'docker ps'
-          }
+      stage('codeQuality'){
+      steps{
+        sh "echo Running detail code analysis"
+        sh "mvn sonar:sonar"
+        sh  "echo All conditions met/passed"
+      }
     }
-    stage('Build - Push') {
-          docker.withRegistry('https://registry.gitlab.com', 'reg1') {
-              img.push 'latest'
-              img.push()
-          }
+      stage('upLoadArtifacts'){
+      steps{
+        sh "echo Running detail code analysis"
+        sh "mvn deploy"
+        sh "echo backupArtifacts in nexus"
+      }
     }
+      stage('predeployment'){
+      steps{
+        sh "echo creating docker image"
+        sh "docker build -t mylandmarktech/maven-web-app . "
+        sh "docker push mylandmarktech/maven-web-app"
+      }
+    }
+    stage('UnDeploy'){
+      steps{
+        sh "echo UNDEPLOYING existing application"
+        sh "docker rm -f webapp"
+      }
     stage('Deploy - Clone') {
           git 'https://github.com/priximmo/jenkins-ansible-docker.git'
     }
